@@ -20,6 +20,7 @@ contract TokenizeNFT is ERC20 {
 
     address public contractIssuer; //YS issuer
     mapping(address => bool) public _investors;
+    mapping(address => uint) public _investorBalance;
 
     constructor(
         string memory _name,
@@ -57,18 +58,6 @@ contract TokenizeNFT is ERC20 {
         _;
     }
 
-    function addInvestor(address user) 
-        public {
-        _investors[user] = true;
-    }
-
-    function removeInvestor(address user)
-        isInvestor
-        public {
-        _investors[user] = false;   
-    }
-
-
     /**
      Issues the number of tokens based on the NFT
      */
@@ -88,7 +77,7 @@ contract TokenizeNFT is ERC20 {
         uint stableAmt = shareQty * tokenPrice;
         stableAddress.transferFrom(msg.sender, address(this), stableAmt);
         _mint(msg.sender, shareQty);
-        addInvestor(msg.sender);
+        _investorBalance[msg.sender] += shareQty;
     }
 
     /**
@@ -98,16 +87,14 @@ contract TokenizeNFT is ERC20 {
     function sellTokens(uint shareQty) isInvestor external { 
         require(closePeriod > 0, 'Fund not started');
         require(block.timestamp <= closePeriod, 'Funding already closed');
-        require(totalSupply() + shareQty <= tokenSupply, 'Not enough token to buy');
-        uint stableAmt = shareQty * tokenPrice;
-        stableAddress.transferFrom(msg.sender, address(this), stableAmt);
-        _mint(msg.sender, shareQty);
-        removeInvestor(msg.sender);
+        require(_investorBalance[msg.sender] <= shareQty, 'Investor exceed number of tokens purchased');
+        payable(contractIssuer).transfer(shareQty);
+        _investorBalance[msg.sender] -= shareQty;
     }
 
     /**
     YS takes proceeds for usage.
-    If there is leftover of unissued tokens, should we create LP, escrow, ideas what to do?
+    Condition: fund needs to be fulfilled and period is after closePeriod (since investor can change their mind).
      */
     // function withdrawProceeds() isIssuer external {
     //     require()
