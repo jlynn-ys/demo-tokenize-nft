@@ -96,9 +96,13 @@ contract TokenizeNFT is ERC20 {
     YS takes proceeds for usage.
     Condition: fund needs to be fulfilled and period is after closePeriod (since investor can change their mind).
      */
-    // function withdrawProceeds() isIssuer external {
-    //     require()
-    // }
+    function withdrawProceeds() isIssuer external {
+        require(block.timestamp > closePeriod, 'Funding period is still open' );
+        uint stableAmt = stableAddress.balanceOf(address(this));
+        if (stableAmt > 0) {
+            stableAddress.transfer(contractIssuer, stableAmt);
+        }
+    }
 
 
 }
