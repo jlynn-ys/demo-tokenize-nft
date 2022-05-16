@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.9;
 
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TokenizeNFT is ERC20 {
     uint256 public tokenPrice;
@@ -68,12 +68,12 @@ contract TokenizeNFT is ERC20 {
 
     /**
     Investor buys the number of desire tokens. 
-    Checks if the fund has enough for user's desired amt to purchase
+    Checks if the fund has enough for user"s desired amt to purchase
      */
     function buyTokens(uint shareQty) external { 
-        require(closePeriod > 0, 'Fund not started');
-        require(block.timestamp <= closePeriod, 'Funding already closed');
-        require(totalSupply() + shareQty <= tokenSupply, 'Not enough token to buy');
+        require(closePeriod > 0, "Fund not started");
+        require(block.timestamp <= closePeriod, "Funding already closed");
+        require(totalSupply() + shareQty <= tokenSupply, "Not enough token to buy");
         uint stableAmt = shareQty * tokenPrice;
         stableAddress.transferFrom(msg.sender, address(this), stableAmt);
         _mint(msg.sender, shareQty);
@@ -82,12 +82,12 @@ contract TokenizeNFT is ERC20 {
 
     /**
     Investor buys the number of desire tokens. 
-    Checks if the fund has enough for user's desired amt to purchase
+    Checks if the fund has enough for user"s desired amt to purchase
      */
     function sellTokens(uint shareQty) isInvestor external { 
-        require(closePeriod > 0, 'Fund not started');
-        require(block.timestamp <= closePeriod, 'Funding already closed');
-        require(_investorBalance[msg.sender] <= shareQty, 'Investor exceed number of tokens purchased');
+        require(closePeriod > 0, "Fund not started");
+        require(block.timestamp <= closePeriod, "Funding already closed");
+        require(_investorBalance[msg.sender] <= shareQty, "Investor exceed number of tokens purchased");
         payable(contractIssuer).transfer(shareQty);
         _investorBalance[msg.sender] -= shareQty;
     }
@@ -97,7 +97,7 @@ contract TokenizeNFT is ERC20 {
     Condition: fund needs to be fulfilled and period is after closePeriod (since investor can change their mind).
      */
     function withdrawProceeds() isIssuer external {
-        require(block.timestamp > closePeriod, 'Funding period is still open' );
+        require(block.timestamp > closePeriod, "Funding period is still open" );
         uint stableAmt = stableAddress.balanceOf(address(this));
         if (stableAmt > 0) {
             stableAddress.transfer(contractIssuer, stableAmt);
